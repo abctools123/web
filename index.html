@@ -674,7 +674,7 @@ const BLOCK_TO_ITEM = {
   'minecraft:frosted_ice':        null,
   'minecraft:fire':               null,
   'minecraft:soul_fire':          null,
-  'minecraft:bubble_column':      null,
+  'minecraft:bubble_column':      'minecraft:water_bucket',
   'minecraft:end_gateway':        null,
   'minecraft:end_portal':         null,
   'minecraft:nether_portal':      null,
@@ -835,9 +835,9 @@ function parseSchematic(nbt) {
       return typeof name === 'string' ? name : String(name);
     });
 
-    const sizeX = regionData['Size']?.['x'] ?? 0;
-    const sizeY = regionData['Size']?.['y'] ?? 0;
-    const sizeZ = regionData['Size']?.['z'] ?? 0;
+    const sizeX = Number(regionData['Size']?.['x'] ?? 0);
+    const sizeY = Number(regionData['Size']?.['y'] ?? 0);
+    const sizeZ = Number(regionData['Size']?.['z'] ?? 0);
     const volume = Math.abs(sizeX) * Math.abs(sizeY) * Math.abs(sizeZ);
 
     const blockStates = regionData['BlockStates'];
@@ -924,11 +924,23 @@ function renderList() {
     const ms = maxStack(id);
     const { total, detail } = formatCount(count, ms);
     const emoji = getEmoji(id);
+    
+    // --- ICON LOGIC ---
+    const baseId = id.replace(/^minecraft:/, '');
+    // PrismarineJS assets are great for this
+    const iconUrl = `https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.1/items/${baseId}.png`;
+    const fallbackUrl = `https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.1/blocks/${baseId}.png`;
+    // ------------------
 
     const li = document.createElement('li');
     li.className = 'mat-entry';
     li.innerHTML = `
-      <div class="mat-icon no-img">${emoji}</div>
+      <div class="mat-icon">
+        <img src="${iconUrl}" 
+             alt="" 
+             loading="lazy" 
+             onerror="if(this.src!=='${fallbackUrl}'){ this.src='${fallbackUrl}'; } else { this.outerHTML='<span style=\\'font-size:10px\\'>${emoji}</span>'; this.parentElement.classList.add('no-img'); }">
+      </div>
       <div class="mat-name-col">
         <div class="mat-name">${displayName}</div>
         <div class="mat-id">${id}</div>
