@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Litematic Material List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d0f0e;
+    --bg2:       #131614;
+    --bg3:       #1a1d1b;
+    --border:    #2a2e2b;
+    --border2:   #3a3f3c;
+    --green:     #4ade80;
+    --green-dim: #22543d;
+    --green-mid: #16a34a;
+    --amber:     #fbbf24;
+    --amber-dim: #451a03;
+    --red:       #f87171;
+    --text:      #e2e8e4;
+    --text2:     #8fa395;
+    --text3:     #526358;
+    --slot-bg:   #1e2320;
+    --slot-border: #3d4a40;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-head: 'Rajdhani', sans-serif;
+    --radius:    4px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── scanline grain overlay ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.06) 2px,
+      rgba(0,0,0,0.06) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── layout ── */
+  .shell {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* ── header ── */
+  header {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-block { display: flex; flex-direction: column; gap: 2px; }
+  .logo-title {
+    font-family: var(--font-head);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green);
+    line-height: 1;
+  }
+  .logo-sub {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+  .header-tag {
+    margin-left: auto;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text3);
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: var(--radius);
+  }
+
+  /* ── drop zone ── */
+  #dropzone {
+    border: 1px dashed var(--border2);
+    border-radius: 6px;
+    background: var(--bg2);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  #dropzone:hover, #dropzone.dragover {
+    border-color: var(--green-mid);
+    background: #0f1a12;
+  }
+  #dropzone input[type=file] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .drop-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    display: block;
+    opacity: 0.4;
+  }
+  .drop-label {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--text2);
+    text-transform: uppercase;
+  }
+  .drop-hint {
+    margin-top: 6px;
+    color: var(--text3);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── progress ── */
+  #progress-wrap {
+    display: none;
+    margin-top: 16px;
+  }
+  .progress-bar-track {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--green);
+    width: 0%;
+    transition: width 0.2s ease;
+    border-radius: 1px;
+  }
+  .progress-label {
+    margin-top: 6px;
+    color: var(--text3);
+    font-size: 11px;
+  }
+
+  /* ── error ── */
+  #error-box {
+    display: none;
+    margin-top: 16px;
+    background: #1a0a0a;
+    border: 1px solid #4a1010;
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    color: var(--red);
+    font-size: 12px;
+  }
+
+  /* ── results section ── */
+  #results { display: none; margin-top: 28px; }
+
+  /* schematic info bar */
+  .info-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .info-name {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .info-chip {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: var(--radius);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  .info-chip.green { color: var(--green); border-color: var(--green-dim); background: #0b1a10; }
+
+  /* toolbar */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 180px;
+  }
+  .search-wrap::before {
+    content: '⌕';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    pointer-events: none;
+    font-size: 15px;
+  }
+  #search-input {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 7px 10px 7px 30px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  #search-input:focus { border-color: var(--green-mid); }
+  #search-input::placeholder { color: var(--text3); }
+
+  .btn-group { display: flex; gap: 4px; }
+  .btn {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.1s;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--border2); color: var(--text); }
+  .btn.active { background: #0b1a10; border-color: var(--green-mid); color: var(--green); }
+  .btn-export {
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.1s;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .btn-export:hover { border-color: var(--green-mid); color: var(--green); }
+
+  /* column headers */
+  .list-header {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    gap: 0 12px;
+    align-items: center;
+    padding: 5px 10px;
+    margin-bottom: 2px;
+    color: var(--text3);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── material list ── */
+  #material-list { list-style: none; }
+
+  .mat-entry {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    gap: 0 12px;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--radius);
+    transition: background 0.08s;
+    cursor: default;
+  }
+  .mat-entry:hover { background: var(--bg2); }
+  .mat-entry + .mat-entry { margin-top: 1px; }
+
+  /* icon slot — mimics Minecraft inventory slot */
+  .mat-icon {
+    width: 24px;
+    height: 24px;
+    background: var(--slot-bg);
+    border: 1px solid var(--slot-border);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    position: relative;
+    image-rendering: pixelated;
+    overflow: hidden;
+  }
+  .mat-icon img {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    display: block;
+  }
+  .mat-icon.no-img { font-size: 9px; color: var(--text3); text-align: center; line-height: 1.1; }
+
+  /* name column */
+  .mat-name-col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .mat-name {
+    color: var(--text);
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mat-id {
+    color: var(--text3);
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* count column */
+  .mat-count-col {
+    text-align: right;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .mat-total {
+    color: var(--amber);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .mat-breakdown {
+    color: var(--text3);
+    font-size: 10px;
+    margin-top: 1px;
+  }
+
+  /* ── region tabs ── */
+  .region-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+  .rtab {
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.1s;
+    text-transform: uppercase;
+  }
+  .rtab:hover { border-color: var(--border2); color: var(--text); }
+  .rtab.active { background: #0b1a10; border-color: var(--green-mid); color: var(--green); }
+
+  /* ── footer stats ── */
+  .stats-footer {
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: var(--text3);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+  .stats-footer span strong { color: var(--text2); }
+
+  /* ── toast ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 1000;
+    white-space: nowrap;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @media (max-width: 480px) {
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .info-bar { flex-direction: column; align-items: flex-start; }
+    .logo-title { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <header>
+    <div class="logo-block">
+      <div class="logo-title">Litematic</div>
+      <div class="logo-sub">Material List &nbsp;·&nbsp; Web Edition</div>
+    </div>
+    <div class="header-tag">GitHub Pages</div>
+  </header>
+
+  <div id="dropzone">
+    <input type="file" id="file-input" accept=".litematic">
+    <span class="drop-icon">⬡</span>
+    <div class="drop-label">Drop .litematic file here</div>
+    <div class="drop-hint">or click to browse &nbsp;·&nbsp; all processing is local, nothing is uploaded</div>
+  </div>
+
+  <div id="progress-wrap">
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-label" id="progress-label">Reading file…</div>
+  </div>
+
+  <div id="error-box"></div>
+
+  <div id="results">
+    <div class="info-bar">
+      <div class="info-name" id="schem-name"></div>
+      <div class="info-chip green" id="chip-blocks"></div>
+      <div class="info-chip" id="chip-regions"></div>
+      <div class="info-chip" id="chip-author"></div>
+    </div>
+
+    <div class="region-tabs" id="region-tabs"></div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <input id="search-input" type="text" placeholder="Filter blocks…" autocomplete="off">
+      </div>
+      <div class="btn-group">
+        <button class="btn active" id="sort-count">Count ↓</button>
+        <button class="btn" id="sort-name">Name</button>
+      </div>
+      <button class="btn-export" id="btn-copy">Copy list</button>
+    </div>
+
+    <div class="list-header">
+      <span></span>
+      <span>Block</span>
+      <span>Count</span>
+    </div>
+
+    <ul id="material-list"></ul>
+
+    <div class="stats-footer" id="stats-footer"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  NBT PARSER  — big-endian binary, no dependencies
+// ═══════════════════════════════════════════════════════════
+const TAG = {
+  END:9999, BYTE:1, SHORT:2, INT:3, LONG:4, FLOAT:5,
+  DOUBLE:6, BYTE_ARRAY:7, STRING:8, LIST:9, COMPOUND:10,
+  INT_ARRAY:11, LONG_ARRAY:12
+};
+
+class NBTReader {
+  constructor(buf) {
+    this.v   = new DataView(buf);
+    this.pos = 0;
+  }
+  u8()  { return this.v.getUint8(this.pos++); }
+  i8()  { return this.v.getInt8(this.pos++); }
+  i16() { const n = this.v.getInt16(this.pos, false); this.pos+=2; return n; }
+  i32() { const n = this.v.getInt32(this.pos, false); this.pos+=4; return n; }
+  // Return BigInt for 64-bit longs — needed for bit-packing
+  i64() {
+    const hi = this.v.getInt32(this.pos,   false);
+    const lo = this.v.getUint32(this.pos+4, false);
+    this.pos += 8;
+    return (BigInt(hi) << 32n) | BigInt(lo);
+  }
+  f32() { const n = this.v.getFloat32(this.pos, false); this.pos+=4; return n; }
+  f64() { const n = this.v.getFloat64(this.pos, false); this.pos+=8; return n; }
+  str() {
+    const len = this.v.getUint16(this.pos, false); this.pos+=2;
+    const bytes = new Uint8Array(this.v.buffer, this.pos, len);
+    this.pos += len;
+    return new TextDecoder().decode(bytes);
+  }
+  readPayload(type) {
+    switch(type) {
+      case TAG.BYTE:       return this.i8();
+      case TAG.SHORT:      return this.i16();
+      case TAG.INT:        return this.i32();
+      case TAG.LONG:       return this.i64();
+      case TAG.FLOAT:      return this.f32();
+      case TAG.DOUBLE:     return this.f64();
+      case TAG.BYTE_ARRAY: { const l=this.i32(); const a=new Int8Array(l); for(let i=0;i<l;i++) a[i]=this.i8(); return a; }
+      case TAG.STRING:     return this.str();
+      case TAG.LIST:       {
+        const et=this.u8(), l=this.i32(), a=[];
+        for(let i=0;i<l;i++) a.push(this.readPayload(et));
+        return { _listType: et, value: a };
+      }
+      case TAG.COMPOUND:   {
+        const obj={};
+        while(true) {
+          const t=this.u8();
+          if(t===0) break;
+          const n=this.str();
+          obj[n]=this.readPayload(t);
+        }
+        return obj;
+      }
+      case TAG.INT_ARRAY:  { const l=this.i32(); const a=new Int32Array(l); for(let i=0;i<l;i++) a[i]=this.i32(); return a; }
+      case TAG.LONG_ARRAY: { const l=this.i32(); const a=[]; for(let i=0;i<l;i++) a.push(this.i64()); return a; }
+    }
+  }
+  readRoot() {
+    const type = this.u8();
+    this.str(); // root name (usually empty)
+    return this.readPayload(type);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BIT ARRAY  — matches Litematica's LitematicaBitArray
+//  bits_per_entry = max(2, ceil(log2(palette_size)))
+//  NO straddling: each long contains floor(64 / bpe) entries
+// ═══════════════════════════════════════════════════════════
+function decodeBitArray(longs, numEntries, paletteSize) {
+  const bpe = Math.max(2, Math.ceil(Math.log2(paletteSize)));
+  const mask = (1n << BigInt(bpe)) - 1n;
+  const entriesPerLong = Math.floor(64 / bpe);
+  const result = new Int32Array(numEntries);
+
+  for (let i = 0; i < numEntries; i++) {
+    const longIndex = Math.floor(i / entriesPerLong);
+    const bitOffset = (i % entriesPerLong) * bpe;
+    const val = (longs[longIndex] >> BigInt(bitOffset)) & mask;
+    result[i] = Number(val);
+  }
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BLOCK → ITEM MAPPING
+//  Blocks that don't drop themselves get mapped to their item
+// ═══════════════════════════════════════════════════════════
+const BLOCK_TO_ITEM = {
+  'minecraft:wall_torch':         'minecraft:torch',
+  'minecraft:soul_wall_torch':    'minecraft:soul_torch',
+  'minecraft:redstone_wall_torch':'minecraft:redstone_torch',
+  'minecraft:wall_sign':          'minecraft:oak_sign',
+  'minecraft:oak_wall_sign':      'minecraft:oak_sign',
+  'minecraft:spruce_wall_sign':   'minecraft:spruce_sign',
+  'minecraft:birch_wall_sign':    'minecraft:birch_sign',
+  'minecraft:jungle_wall_sign':   'minecraft:jungle_sign',
+  'minecraft:acacia_wall_sign':   'minecraft:acacia_sign',
+  'minecraft:dark_oak_wall_sign': 'minecraft:dark_oak_sign',
+  'minecraft:mangrove_wall_sign': 'minecraft:mangrove_sign',
+  'minecraft:cherry_wall_sign':   'minecraft:cherry_sign',
+  'minecraft:crimson_wall_sign':  'minecraft:crimson_sign',
+  'minecraft:warped_wall_sign':   'minecraft:warped_sign',
+  'minecraft:bamboo_wall_sign':   'minecraft:bamboo_sign',
+  'minecraft:wall_hanging_sign':  'minecraft:oak_hanging_sign',
+  'minecraft:oak_wall_hanging_sign':'minecraft:oak_hanging_sign',
+  'minecraft:spruce_wall_hanging_sign':'minecraft:spruce_hanging_sign',
+  'minecraft:birch_wall_hanging_sign':'minecraft:birch_hanging_sign',
+  'minecraft:jungle_wall_hanging_sign':'minecraft:jungle_hanging_sign',
+  'minecraft:acacia_wall_hanging_sign':'minecraft:acacia_hanging_sign',
+  'minecraft:dark_oak_wall_hanging_sign':'minecraft:dark_oak_hanging_sign',
+  'minecraft:mangrove_wall_hanging_sign':'minecraft:mangrove_hanging_sign',
+  'minecraft:cherry_wall_hanging_sign':'minecraft:cherry_hanging_sign',
+  'minecraft:crimson_wall_hanging_sign':'minecraft:crimson_hanging_sign',
+  'minecraft:warped_wall_hanging_sign':'minecraft:warped_hanging_sign',
+  'minecraft:bamboo_wall_hanging_sign':'minecraft:bamboo_hanging_sign',
+  'minecraft:potted_cactus':      'minecraft:cactus',
+  'minecraft:potted_dandelion':   'minecraft:dandelion',
+  'minecraft:potted_poppy':       'minecraft:poppy',
+  'minecraft:potted_blue_orchid': 'minecraft:blue_orchid',
+  'minecraft:potted_allium':      'minecraft:allium',
+  'minecraft:potted_azure_bluet': 'minecraft:azure_bluet',
+  'minecraft:potted_red_tulip':   'minecraft:red_tulip',
+  'minecraft:potted_orange_tulip':'minecraft:orange_tulip',
+  'minecraft:potted_white_tulip': 'minecraft:white_tulip',
+  'minecraft:potted_pink_tulip':  'minecraft:pink_tulip',
+  'minecraft:potted_oxeye_daisy': 'minecraft:oxeye_daisy',
+  'minecraft:potted_cornflower':  'minecraft:cornflower',
+  'minecraft:potted_lily_of_the_valley':'minecraft:lily_of_the_valley',
+  'minecraft:potted_wither_rose': 'minecraft:wither_rose',
+  'minecraft:potted_fern':        'minecraft:fern',
+  'minecraft:potted_dead_bush':   'minecraft:dead_bush',
+  'minecraft:potted_bamboo':      'minecraft:bamboo',
+  'minecraft:potted_crimson_fungus':'minecraft:crimson_fungus',
+  'minecraft:potted_warped_fungus':'minecraft:warped_fungus',
+  'minecraft:potted_crimson_roots':'minecraft:crimson_roots',
+  'minecraft:potted_warped_roots':'minecraft:warped_roots',
+  'minecraft:potted_azalea_bush': 'minecraft:azalea',
+  'minecraft:potted_flowering_azalea_bush':'minecraft:flowering_azalea',
+  'minecraft:potted_oak_sapling': 'minecraft:oak_sapling',
+  'minecraft:potted_spruce_sapling':'minecraft:spruce_sapling',
+  'minecraft:potted_birch_sapling':'minecraft:birch_sapling',
+  'minecraft:potted_jungle_sapling':'minecraft:jungle_sapling',
+  'minecraft:potted_acacia_sapling':'minecraft:acacia_sapling',
+  'minecraft:potted_dark_oak_sapling':'minecraft:dark_oak_sapling',
+  'minecraft:potted_mangrove_propagule':'minecraft:mangrove_propagule',
+  'minecraft:potted_cherry_sapling':'minecraft:cherry_sapling',
+  'minecraft:redstone_wire':      'minecraft:redstone',
+  'minecraft:wheat':              'minecraft:wheat_seeds',
+  'minecraft:carrots':            'minecraft:carrot',
+  'minecraft:potatoes':           'minecraft:potato',
+  'minecraft:beetroots':          'minecraft:beetroot_seeds',
+  'minecraft:sweet_berry_bush':   'minecraft:sweet_berries',
+  'minecraft:cocoa':              'minecraft:cocoa_beans',
+  'minecraft:nether_wart':        'minecraft:nether_wart',
+  'minecraft:frosted_ice':        null,
+  'minecraft:fire':               null,
+  'minecraft:soul_fire':          null,
+  'minecraft:bubble_column':      null,
+  'minecraft:end_gateway':        null,
+  'minecraft:end_portal':         null,
+  'minecraft:nether_portal':      null,
+  'minecraft:water':              'minecraft:water_bucket',
+  'minecraft:lava':               'minecraft:lava_bucket',
+  'minecraft:piston_head':        null,
+  'minecraft:moving_piston':      null,
+  'minecraft:tall_seagrass':      'minecraft:seagrass',
+  'minecraft:large_fern':         'minecraft:fern',
+  'minecraft:tall_grass':         'minecraft:grass',
+  'minecraft:sunflower':          'minecraft:sunflower',
+  'minecraft:lilac':              'minecraft:lilac',
+  'minecraft:peony':              'minecraft:peony',
+  'minecraft:rose_bush':          'minecraft:rose_bush',
+  'minecraft:skeleton_skull':     'minecraft:skeleton_skull',
+  'minecraft:wither_skeleton_skull':'minecraft:wither_skeleton_skull',
+  'minecraft:zombie_head':        'minecraft:zombie_head',
+  'minecraft:player_head':        'minecraft:player_head',
+  'minecraft:creeper_head':       'minecraft:creeper_head',
+  'minecraft:dragon_head':        'minecraft:dragon_head',
+  'minecraft:piglin_head':        'minecraft:piglin_head',
+  'minecraft:skull':              'minecraft:skeleton_skull',
+  'minecraft:wall_skull':         'minecraft:skeleton_skull',
+  'minecraft:tripwire':           'minecraft:string',
+  'minecraft:kelp_plant':         'minecraft:kelp',
+  'minecraft:attached_melon_stem':'minecraft:melon_seeds',
+  'minecraft:attached_pumpkin_stem':'minecraft:pumpkin_seeds',
+  'minecraft:melon_stem':         'minecraft:melon_seeds',
+  'minecraft:pumpkin_stem':       'minecraft:pumpkin_seeds',
+};
+
+// Air-like blocks to skip entirely
+const AIR_BLOCKS = new Set([
+  'minecraft:air','minecraft:cave_air','minecraft:void_air',
+  'minecraft:structure_void','minecraft:barrier',
+]);
+
+// ═══════════════════════════════════════════════════════════
+//  DISPLAY NAME  — prettify block ID
+// ═══════════════════════════════════════════════════════════
+function blockIdToName(id) {
+  // Strip namespace
+  const base = id.replace(/^minecraft:/, '').replace(/^[a-z]+:/, '');
+  return base.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+// Emoji icon map for common blocks (fallback text)
+const ICON_EMOJI = {
+  stone:'🪨', granite:'🪨', diorite:'🪨', andesite:'🪨',
+  cobblestone:'🪨', sand:'🏖', gravel:'🪨',
+  grass_block:'🌿', dirt:'🟫', coarse_dirt:'🟫', podzol:'🟫',
+  oak_log:'🪵', spruce_log:'🪵', birch_log:'🪵', jungle_log:'🪵',
+  acacia_log:'🪵', dark_oak_log:'🪵', mangrove_log:'🪵', cherry_log:'🪵',
+  oak_planks:'🪵', spruce_planks:'🪵', birch_planks:'🪵', jungle_planks:'🪵',
+  acacia_planks:'🪵', dark_oak_planks:'🪵',
+  glass:'🔷', glass_pane:'🔷',
+  white_stained_glass:'🔷', orange_stained_glass:'🔶', yellow_stained_glass:'🟡',
+  iron_block:'⬜', gold_block:'🟡', diamond_block:'💎', emerald_block:'💚',
+  netherite_block:'⬛', coal_block:'⬛', redstone_block:'🔴',
+  lapis_block:'🟦', copper_block:'🟧', amethyst_block:'🟣',
+  iron_ore:'⛏', gold_ore:'⛏', diamond_ore:'⛏', coal_ore:'⛏',
+  water:'🟦', lava:'🔥', fire:'🔥',
+  redstone:'🔴', redstone_wire:'🔴',
+  torch:'🕯', lantern:'🏮', soul_lantern:'🏮',
+  chest:'📦', trapped_chest:'📦', barrel:'📦', shulker_box:'📦',
+  crafting_table:'🪚', furnace:'🔥', blast_furnace:'🔥', smoker:'🔥',
+  bookshelf:'📚', enchanting_table:'✨', anvil:'⚒',
+  bed:'🛏', door:'🚪',
+  ladder:'🪜', cobblestone_stairs:'🪜', oak_stairs:'🪜',
+  flower:'🌸', poppy:'🌹', dandelion:'🌻', tulip:'🌷',
+  obsidian:'⬛', crying_obsidian:'⬛', bedrock:'⬛',
+  wool:'🧶', carpet:'🧶',
+  slab:'▬', stairs:'🪜',
+  snow_block:'⬜', ice:'🧊', blue_ice:'🧊', packed_ice:'🧊',
+  clay:'🟫', terracotta:'🟤',
+  shroomlight:'💡', glowstone:'💡', sea_lantern:'💡',
+  quartz:'⬜', quartz_block:'⬜',
+  prismarine:'🟦', prismarine_bricks:'🟦',
+  purpur_block:'🟣', end_stone:'🟡',
+  nether_brick:'🟥', netherrack:'🟥', magma_block:'🔥',
+};
+function getEmoji(id) {
+  const base = id.replace(/^minecraft:/, '');
+  for (const [k, v] of Object.entries(ICON_EMOJI)) {
+    if (base === k || base.includes(k)) return v;
+  }
+  return '▪';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  COUNT FORMATTING  — exact match of MaterialListHudRenderer
+//  format: count > 1 stack:
+//    if box >= 1.0:   "count (x.xx SB)"
+//    elif stacks+rem: "count (stacks × 64 + rem)"
+//    elif stacks:     "count (stacks × 64)"
+//  maxStackSize defaults 64; some items are 16
+// ═══════════════════════════════════════════════════════════
+const STACK16 = new Set([
+  'minecraft:ender_pearl','minecraft:snowball','minecraft:egg',
+  'minecraft:bucket','minecraft:water_bucket','minecraft:lava_bucket',
+  'minecraft:milk_bucket','minecraft:powder_snow_bucket',
+  'minecraft:salmon_bucket','minecraft:cod_bucket','minecraft:tropical_fish_bucket',
+  'minecraft:axolotl_bucket','minecraft:tadpole_bucket','minecraft:pufferfish_bucket',
+  'minecraft:sign','minecraft:oak_sign','minecraft:spruce_sign','minecraft:birch_sign',
+  'minecraft:jungle_sign','minecraft:acacia_sign','minecraft:dark_oak_sign',
+  'minecraft:mangrove_sign','minecraft:cherry_sign','minecraft:crimson_sign',
+  'minecraft:warped_sign','minecraft:bamboo_sign',
+]);
+function maxStack(itemId) {
+  return STACK16.has(itemId) ? 16 : 64;
+}
+
+function formatCount(count, maxStackSize) {
+  const stacks = Math.floor(count / maxStackSize);
+  const remainder = count % maxStackSize;
+  const boxCount = count / (27 * maxStackSize);
+
+  if (count > maxStackSize) {
+    if (boxCount >= 1.0) {
+      return {
+        total: count.toLocaleString(),
+        detail: `(${boxCount.toFixed(2)} SB)`
+      };
+    } else if (remainder > 0) {
+      return {
+        total: count.toLocaleString(),
+        detail: `(${stacks} × ${maxStackSize} + ${remainder})`
+      };
+    } else {
+      return {
+        total: count.toLocaleString(),
+        detail: `(${stacks} × ${maxStackSize})`
+      };
+    }
+  }
+  return { total: count.toLocaleString(), detail: '' };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SCHEMATIC PARSER
+// ═══════════════════════════════════════════════════════════
+function parseSchematic(nbt) {
+  const meta = nbt['Metadata'];
+  const name     = meta?.['Name']   ?? 'Unknown';
+  const author   = meta?.['Author'] ?? '';
+  const regionsNbt = nbt['Regions'];
+
+  const regions = {};
+
+  for (const [regionName, regionData] of Object.entries(regionsNbt)) {
+    const palette = regionData['BlockStatePalette'];
+    if (!palette) continue;
+
+    const palArray = palette.value ?? palette;
+    const paletteIds = palArray.map(entry => {
+      const name = entry['Name'];
+      const props = entry['Properties'] ?? {};
+      return typeof name === 'string' ? name : String(name);
+    });
+
+    const sizeX = regionData['Size']?.['x'] ?? 0;
+    const sizeY = regionData['Size']?.['y'] ?? 0;
+    const sizeZ = regionData['Size']?.['z'] ?? 0;
+    const volume = Math.abs(sizeX) * Math.abs(sizeY) * Math.abs(sizeZ);
+
+    const blockStates = regionData['BlockStates'];
+    if (!blockStates || !Array.isArray(blockStates) || volume === 0) continue;
+
+    const indices = decodeBitArray(blockStates, volume, paletteIds.length);
+
+    const counts = {};
+    for (let i = 0; i < volume; i++) {
+      const idx = indices[i];
+      if (idx < 0 || idx >= paletteIds.length) continue;
+      const blockId = paletteIds[idx];
+      if (AIR_BLOCKS.has(blockId)) continue;
+
+      // Map wall/double-tall variants to their item ID
+      const baseId = blockId.split('[')[0];
+      const mapped = BLOCK_TO_ITEM[baseId];
+      if (mapped === null) continue; // explicitly non-obtainable
+      const itemId = mapped ?? baseId;
+
+      counts[itemId] = (counts[itemId] ?? 0) + 1;
+    }
+
+    regions[regionName] = counts;
+  }
+
+  return { name, author, regions };
+}
+
+function mergeRegions(regions) {
+  const merged = {};
+  for (const counts of Object.values(regions)) {
+    for (const [id, n] of Object.entries(counts)) {
+      merged[id] = (merged[id] ?? 0) + n;
+    }
+  }
+  return merged;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UI STATE
+// ═══════════════════════════════════════════════════════════
+let state = {
+  parsed: null,
+  activeRegion: '__all__',
+  sortBy: 'count',
+  filter: '',
+};
+
+function setProgress(pct, label) {
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = label;
+}
+
+function showError(msg) {
+  const b = document.getElementById('error-box');
+  b.textContent = '⚠ ' + msg;
+  b.style.display = 'block';
+  document.getElementById('progress-wrap').style.display = 'none';
+}
+
+function getActiveCounts() {
+  const { parsed, activeRegion } = state;
+  if (!parsed) return {};
+  if (activeRegion === '__all__') return mergeRegions(parsed.regions);
+  return parsed.regions[activeRegion] ?? {};
+}
+
+function renderList() {
+  const counts = getActiveCounts();
+  const { sortBy, filter } = state;
+  const list = document.getElementById('material-list');
+
+  let entries = Object.entries(counts)
+    .filter(([id]) => filter === '' || id.includes(filter.toLowerCase()) || blockIdToName(id).toLowerCase().includes(filter.toLowerCase()))
+    .sort(sortBy === 'count'
+      ? (a, b) => b[1] - a[1]
+      : (a, b) => blockIdToName(a[0]).localeCompare(blockIdToName(b[0]))
+    );
+
+  list.innerHTML = '';
+  for (const [id, count] of entries) {
+    const displayName = blockIdToName(id);
+    const ms = maxStack(id);
+    const { total, detail } = formatCount(count, ms);
+    const emoji = getEmoji(id);
+
+    const li = document.createElement('li');
+    li.className = 'mat-entry';
+    li.innerHTML = `
+      <div class="mat-icon no-img">${emoji}</div>
+      <div class="mat-name-col">
+        <div class="mat-name">${displayName}</div>
+        <div class="mat-id">${id}</div>
+      </div>
+      <div class="mat-count-col">
+        <div class="mat-total">${total}</div>
+        ${detail ? `<div class="mat-breakdown">${detail}</div>` : ''}
+      </div>
+    `;
+    list.appendChild(li);
+  }
+
+  // stats footer
+  const totalBlocks = Object.values(counts).reduce((a, b) => a + b, 0);
+  const uniqueBlocks = Object.keys(counts).length;
+  document.getElementById('stats-footer').innerHTML =
+    `<span>Showing <strong>${entries.length}</strong> of <strong>${uniqueBlocks}</strong> block types</span>` +
+    `<span>Total blocks: <strong>${totalBlocks.toLocaleString()}</strong></span>`;
+}
+
+function renderRegionTabs() {
+  const { parsed, activeRegion } = state;
+  const tabs = document.getElementById('region-tabs');
+  tabs.innerHTML = '';
+
+  const names = ['__all__', ...Object.keys(parsed.regions)];
+  for (const name of names) {
+    const btn = document.createElement('button');
+    btn.className = 'rtab' + (name === activeRegion ? ' active' : '');
+    btn.textContent = name === '__all__' ? 'All regions' : name;
+    btn.onclick = () => {
+      state.activeRegion = name;
+      tabs.querySelectorAll('.rtab').forEach(b => b.classList.toggle('active', b === btn));
+      renderList();
+    };
+    tabs.appendChild(btn);
+  }
+}
+
+function showResults(parsed, fileName) {
+  state.parsed = parsed;
+  state.activeRegion = '__all__';
+  state.filter = '';
+  state.sortBy = 'count';
+  document.getElementById('search-input').value = '';
+  document.getElementById('sort-count').classList.add('active');
+  document.getElementById('sort-name').classList.remove('active');
+
+  // info bar
+  document.getElementById('schem-name').textContent = parsed.name || fileName;
+  const allCounts = mergeRegions(parsed.regions);
+  const totalBlocks = Object.values(allCounts).reduce((a, b) => a + b, 0);
+  document.getElementById('chip-blocks').textContent = totalBlocks.toLocaleString() + ' blocks';
+  document.getElementById('chip-regions').textContent = Object.keys(parsed.regions).length + ' region' + (Object.keys(parsed.regions).length !== 1 ? 's' : '');
+  document.getElementById('chip-author').textContent = parsed.author ? 'by ' + parsed.author : 'unknown author';
+
+  renderRegionTabs();
+  renderList();
+
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FILE PROCESSING
+// ═══════════════════════════════════════════════════════════
+async function processFile(file) {
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'block';
+  setProgress(10, 'Reading file…');
+
+  try {
+    const arrayBuf = await file.arrayBuffer();
+    setProgress(25, 'Decompressing gzip…');
+
+    // Decompress using DecompressionStream (modern browsers)
+    let nbtBuf;
+    try {
+      const ds = new DecompressionStream('gzip');
+      const writer = ds.writable.getWriter();
+      const reader = ds.readable.getReader();
+      writer.write(new Uint8Array(arrayBuf));
+      writer.close();
+      const chunks = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const totalLen = chunks.reduce((s, c) => s + c.length, 0);
+      const merged = new Uint8Array(totalLen);
+      let off = 0;
+      for (const c of chunks) { merged.set(c, off); off += c.length; }
+      nbtBuf = merged.buffer;
+    } catch (e) {
+      // Maybe not gzipped — try raw
+      nbtBuf = arrayBuf;
+    }
+
+    setProgress(50, 'Parsing NBT…');
+    const reader = new NBTReader(nbtBuf);
+    const nbt = reader.readRoot();
+
+    setProgress(75, 'Counting blocks…');
+    // Give UI a tick to update
+    await new Promise(r => setTimeout(r, 0));
+    const parsed = parseSchematic(nbt);
+
+    setProgress(95, 'Rendering…');
+    await new Promise(r => setTimeout(r, 0));
+
+    showResults(parsed, file.name.replace('.litematic', ''));
+    setProgress(100, 'Done');
+  } catch (e) {
+    showError(e.message || 'Failed to parse file');
+    console.error(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════════════════════════
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('file-input');
+
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f) processFile(f);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) processFile(e.target.files[0]); });
+
+document.getElementById('search-input').addEventListener('input', e => {
+  state.filter = e.target.value;
+  renderList();
+});
+
+document.getElementById('sort-count').addEventListener('click', () => {
+  state.sortBy = 'count';
+  document.getElementById('sort-count').classList.add('active');
+  document.getElementById('sort-name').classList.remove('active');
+  renderList();
+});
+document.getElementById('sort-name').addEventListener('click', () => {
+  state.sortBy = 'name';
+  document.getElementById('sort-name').classList.add('active');
+  document.getElementById('sort-count').classList.remove('active');
+  renderList();
+});
+
+document.getElementById('btn-copy').addEventListener('click', () => {
+  const counts = getActiveCounts();
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const lines = entries.map(([id, count]) => {
+    const name = blockIdToName(id);
+    const ms = maxStack(id);
+    const { total, detail } = formatCount(count, ms);
+    return detail ? `${name}\t${total} ${detail}` : `${name}\t${total}`;
+  });
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
