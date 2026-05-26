@@ -925,10 +925,10 @@ function renderList() {
     const { total, detail } = formatCount(count, ms);
     const emoji = getEmoji(id);
     
-    // Real block icons from mcasset.cloud (Minecraft vanilla textures)
+    // Real block icons from mcasset.cloud (Minecraft 1.21.4 vanilla textures)
     const baseId = id.replace(/^minecraft:/, '');
-    const iconUrl    = `https://assets.mcasset.cloud/1.20.1/assets/minecraft/textures/block/${baseId}.png`;
-    const itemUrl    = `https://assets.mcasset.cloud/1.20.1/assets/minecraft/textures/item/${baseId}.png`;
+    const iconUrl    = `https://assets.mcasset.cloud/1.21.4/assets/minecraft/textures/block/${baseId}.png`;
+    const itemUrl    = `https://assets.mcasset.cloud/1.21.4/assets/minecraft/textures/item/${baseId}.png`;
 
     const li = document.createElement('li');
     li.className = 'mat-entry';
