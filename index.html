@@ -597,7 +597,9 @@ function decodeBitArray(longs, numEntries, paletteSize) {
     const bitOffset = (i % entriesPerLong) * bpe;
     const raw = longs[longIndex];
     if (raw === undefined || raw === null) { result[i] = 0; continue; }
-    const val = (BigInt(raw) >> BigInt(bitOffset)) & mask;
+    // Some NBT parsers return longs as [hi, lo] pairs instead of BigInt
+    const big = Array.isArray(raw) ? (BigInt(raw[0]) << 32n | (BigInt(raw[1]) & 0xFFFFFFFFn)) : BigInt(raw);
+    const val = (big >> BigInt(bitOffset)) & mask;
     result[i] = Number(val);
   }
   return result;
@@ -854,8 +856,13 @@ function parseSchematic(nbt) {
     const sizeZ = Number(regionData['Size']?.['z'] ?? 0);
     const volume = Math.abs(sizeX) * Math.abs(sizeY) * Math.abs(sizeZ);
 
-    const blockStates = regionData['BlockStates'];
-    if (!blockStates || !Array.isArray(blockStates) || volume === 0) continue;
+    let blockStates = regionData['BlockStates'];
+    if (!blockStates || volume === 0) continue;
+    // NBT parsers may wrap long-array in {_listType, value}
+    if (!Array.isArray(blockStates)) {
+      blockStates = blockStates.value ?? [];
+    }
+    if (!Array.isArray(blockStates) || blockStates.length === 0) continue;
 
     const indices = decodeBitArray(blockStates, volume, paletteIds.length);
 
