@@ -925,21 +925,19 @@ function renderList() {
     const { total, detail } = formatCount(count, ms);
     const emoji = getEmoji(id);
     
-    // --- ICON LOGIC ---
+    // Real block icons from mcasset.cloud (Minecraft vanilla textures)
     const baseId = id.replace(/^minecraft:/, '');
-    // PrismarineJS assets are great for this
-    const iconUrl = `https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.1/items/${baseId}.png`;
-    const fallbackUrl = `https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/1.20.1/blocks/${baseId}.png`;
-    // ------------------
+    const iconUrl    = `https://assets.mcasset.cloud/1.20.1/assets/minecraft/textures/block/${baseId}.png`;
+    const itemUrl    = `https://assets.mcasset.cloud/1.20.1/assets/minecraft/textures/item/${baseId}.png`;
 
     const li = document.createElement('li');
     li.className = 'mat-entry';
     li.innerHTML = `
       <div class="mat-icon">
-        <img src="${iconUrl}" 
-             alt="" 
-             loading="lazy" 
-             onerror="if(this.src!=='${fallbackUrl}'){ this.src='${fallbackUrl}'; } else { this.outerHTML='<span style=\\'font-size:10px\\'>${emoji}</span>'; this.parentElement.classList.add('no-img'); }">
+        <img src="${iconUrl}"
+             alt=""
+             loading="lazy"
+             onerror="let t=this;if(t.src!=='${itemUrl}'){t.src='${itemUrl}';}else{t.outerHTML='<span style=\\'font-size:10px\\'>${emoji}</span>';t.parentElement.classList.add('no-img');}">
       </div>
       <div class="mat-name-col">
         <div class="mat-name">${displayName}</div>
