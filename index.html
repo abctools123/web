@@ -817,21 +817,32 @@ function formatCount(count, maxStackSize) {
 //  SCHEMATIC PARSER
 // ═══════════════════════════════════════════════════════════
 function parseSchematic(nbt) {
-  const meta = nbt['Metadata'];
+  // Support old format with "Schematic" wrapper
+  const root = nbt['Schematic'] ?? nbt;
+  const meta = root['Metadata'];
   const name     = meta?.['Name']   ?? 'Unknown';
   const author   = meta?.['Author'] ?? '';
-  const regionsNbt = nbt['Regions'];
+
+  // Support "Regions" (plural) and "Region" (singular, old format)
+  let regionsNbt = root['Regions'] ?? root['Region'];
+  if (!regionsNbt) return { name, author, regions: {} };
+  // Wrap single-region format into an object keyed by name
+  if (!regionsNbt['Size'] && regionsNbt['BlockStatePalette']) {
+    regionsNbt = { 'Region': regionsNbt };
+  }
 
   const regions = {};
 
   for (const [regionName, regionData] of Object.entries(regionsNbt)) {
-    const palette = regionData['BlockStatePalette'];
+    // Support "Palette" (old) and "BlockStatePalette" (modern)
+    const palette = regionData['BlockStatePalette'] ?? regionData['Palette'];
     if (!palette) continue;
 
     const palArray = palette.value ?? palette;
     const paletteIds = palArray.map(entry => {
+      // Entry can be a compound {Name: "...", Properties: {...}} OR a plain string
+      if (typeof entry === 'string' || typeof entry === 'number') return String(entry);
       const name = entry['Name'];
-      const props = entry['Properties'] ?? {};
       return typeof name === 'string' ? name : String(name);
     });
 
