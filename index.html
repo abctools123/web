@@ -475,6 +475,18 @@
     .toolbar { flex-direction: column; align-items: stretch; }
     .info-bar { flex-direction: column; align-items: flex-start; }
     .logo-title { font-size: 20px; }
+    .btn-group { flex-wrap: wrap; }
+    .btn-export { padding: 6px 10px; font-size: 11px; }
+    .cat-pills { gap: 3px; }
+    .btn-cat { padding: 2px 8px; font-size: 9px; }
+    .list-header { font-size: 10px; }
+    .mat-entry { grid-template-columns: 28px 1fr 80px; gap: 6px; padding: 5px 8px; }
+    .mat-name { font-size: 12px; }
+    .mat-id { font-size: 9px; }
+    .mat-total { font-size: 13px; }
+    .mat-icon { width: 24px; height: 24px; }
+    .kbd-hints { font-size: 10px; gap: 8px; }
+    .stats-footer { flex-direction: column; gap: 4px; text-align: center; }
   }
 </style>
 </head>
@@ -1070,7 +1082,10 @@ function renderList() {
     );
 
   list.innerHTML = '';
+  const totalBlocks = entries.reduce((s,[,c]) => s + c, 0);
+  const maxCount = entries.length ? Math.max(...entries.map(e=>e[1])) : 1;
   for (const [id, count] of entries) {
+    const pctBar = (count / maxCount) * 100;
     const displayName = blockIdToName(id);
     const ms = maxStack(id);
     const { total, detail } = formatCount(count, ms);
@@ -1088,11 +1103,11 @@ function renderList() {
     li.className = 'mat-entry';
     li.innerHTML = `
       <div class="mat-icon">
-        <img src="${textureURLs[0]}"
+        <img data-src="${textureURLs[0]}" data-src2="${textureURLs[1]}"
              alt="${displayName}"
              loading="lazy"
              decoding="async"
-             onerror="let t=this;if(t.src.endsWith('block/'+t.getAttribute('data-base')+'.png')){t.src='${textureURLs[1]}';}else{t.outerHTML='<span style=\'font-size:10px;line-height:24px\'>${emoji}</span>';t.parentElement.classList.add('no-img');}"
+             onerror="let t=this;let b=t.getAttribute('data-base');if(!t.dataset.failed)t.dataset.failed='1';if(t.src.endsWith('block/'+b+'.png')){t.src=t.getAttribute('data-src2');}else{t.outerHTML='<span style=\'font-size:10px;line-height:24px\'>${emoji}</span>';t.parentElement.classList.add('no-img');}"
              data-base="${baseId}">
       </div>
       <div class="mat-name-col">
@@ -1102,13 +1117,13 @@ function renderList() {
       <div class="mat-count-col">
         <div class="mat-total">${total}</div>
         ${detail ? `<div class="mat-breakdown">${detail}</div>` : ''}
+        <div class="mat-bar-wrap"><div class="mat-bar-fill" style="width:${pctBar}%"></div></div>
       </div>
     `;
     list.appendChild(li);
   }
 
   // stats footer
-  const totalBlocks = Object.values(counts).reduce((a, b) => a + b, 0);
   const uniqueBlocks = Object.keys(counts).length;
   document.getElementById('stats-footer').innerHTML =
     `<span>Showing <strong>${entries.length}</strong> of <strong>${uniqueBlocks}</strong> block types</span>` +
@@ -1471,6 +1486,33 @@ function showToast(msg) {
   t.classList.add('show');
   clearTimeout(t._timeout);
   t._timeout = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── IntersectionObserver for lazy icon loading ──
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const img = e.target;
+        if (img.dataset.src && !img.src) {
+          img.src = img.dataset.src;
+        }
+        io.unobserve(img);
+      }
+    });
+  }, { rootMargin: '300px' });
+  const listEl = document.getElementById('material-list');
+  if (listEl) {
+    const mo = new MutationObserver((muts) => {
+      muts.forEach(m => m.addedNodes.forEach(n => {
+        if (n.nodeType === 1) {
+          if (n.tagName === 'IMG') io.observe(n);
+          if (n.querySelectorAll) n.querySelectorAll('img').forEach(io.observe, io);
+        }
+      }));
+    });
+    mo.observe(listEl, { childList: true, subtree: true });
+  }
 }
 </script>
 </body>
