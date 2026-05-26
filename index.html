@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Browser-based Litematica schematic analyzer. Parse .litematic files locally to generate material lists, block counts, and stack calculations — no uploads required.">
 <title>Litematica Material List</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -434,6 +435,24 @@
     transform: translateX(-50%) translateY(0);
   }
 
+  /* kbd hints */
+  .kbd-hints {
+    display: none;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-top: 10px;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+  }
+  .kbd-hints.visible { display: flex; }
+  .kbd-hints span {
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 2px;
+    cursor: default;
+  }
+
   /* scrollbar */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -455,7 +474,7 @@
       <div class="logo-title">Litematica</div>
       <div class="logo-sub">Material List &nbsp;·&nbsp; browser-based schematic analyzer</div>
     </div>
-    <div class="header-tag">v2.0 &nbsp;·&nbsp; open source</div>
+    <div class="header-tag" id="btn-new" style="cursor:pointer;display:none;">+ New file</div>
   </header>
 
   <div id="dropzone">
@@ -495,6 +514,11 @@
       <button class="btn-export" id="btn-copy">Copy</button>
       <button class="btn-export" id="btn-csv">CSV</button>
       <button class="btn-export" id="btn-json">JSON</button>
+    </div>
+    <div class="kbd-hints" id="kbd-hints">
+      <span title="Ctrl+K">⌘K Search</span>
+      <span title="Ctrl+S">⌘S Sort</span>
+      <span title="Esc">Esc Clear</span>
     </div>
 
     <div class="list-header">
@@ -948,19 +972,24 @@ function renderList() {
     const { total, detail } = formatCount(count, ms);
     const emoji = getEmoji(id);
     
-    // Real block icons from mcasset.cloud (Minecraft 1.21.4 vanilla textures)
+    // Real block icons from multiple Minecraft texture CDN sources
     const baseId = id.replace(/^minecraft:/, '');
-    const iconUrl    = `https://assets.mcasset.cloud/1.21.4/assets/minecraft/textures/block/${baseId}.png`;
-    const itemUrl    = `https://assets.mcasset.cloud/1.21.4/assets/minecraft/textures/item/${baseId}.png`;
+    // Try block texture, then item texture, then fallback emoji
+    const textureURLs = [
+      `https://assets.mcasset.cloud/1.21.4/assets/minecraft/textures/block/${baseId}.png`,
+      `https://assets.mcasset.cloud/1.21.4/assets/minecraft/textures/item/${baseId}.png`
+    ];
 
     const li = document.createElement('li');
     li.className = 'mat-entry';
     li.innerHTML = `
       <div class="mat-icon">
-        <img src="${iconUrl}"
-             alt=""
+        <img src="${textureURLs[0]}"
+             alt="${displayName}"
              loading="lazy"
-             onerror="let t=this;if(t.src!=='${itemUrl}'){t.src='${itemUrl}';}else{t.outerHTML='<span style=\\'font-size:10px\\'>${emoji}</span>';t.parentElement.classList.add('no-img');}">
+             decoding="async"
+             onerror="let t=this;if(t.src.endsWith('block/'+t.getAttribute('data-base')+'.png')){t.src='${textureURLs[1]}';}else{t.outerHTML='<span style=\'font-size:10px;line-height:24px\'>${emoji}</span>';t.parentElement.classList.add('no-img');}"
+             data-base="${baseId}">
       </div>
       <div class="mat-name-col">
         <div class="mat-name">${displayName}</div>
@@ -1023,6 +1052,8 @@ function showResults(parsed, fileName) {
 
   document.getElementById('progress-wrap').style.display = 'none';
   document.getElementById('results').style.display = 'block';
+  document.getElementById('kbd-hints').classList.add('visible');
+  document.getElementById('btn-new').style.display = '';
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1245,6 +1276,19 @@ function downloadFile(filename, content, mimeType) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+// New file button
+document.getElementById('btn-new').addEventListener('click', () => {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('dropzone').style.display = '';
+  document.getElementById('kbd-hints').classList.remove('visible');
+  document.getElementById('btn-new').style.display = 'none';
+  document.getElementById('error-box').style.display = 'none';
+  state.parsed = null;
+  state.activeRegion = '__all__';
+  state.filter = '';
+  state.sortBy = 'count';
+});
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
