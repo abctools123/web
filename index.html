@@ -586,6 +586,7 @@ class NBTReader {
 //  NO straddling: each long contains floor(64 / bpe) entries
 // ═══════════════════════════════════════════════════════════
 function decodeBitArray(longs, numEntries, paletteSize) {
+  if (!longs || !longs.length || numEntries <= 0) return new Int32Array(0);
   const bpe = Math.max(2, Math.ceil(Math.log2(paletteSize)));
   const mask = (1n << BigInt(bpe)) - 1n;
   const entriesPerLong = Math.floor(64 / bpe);
@@ -594,7 +595,9 @@ function decodeBitArray(longs, numEntries, paletteSize) {
   for (let i = 0; i < numEntries; i++) {
     const longIndex = Math.floor(i / entriesPerLong);
     const bitOffset = (i % entriesPerLong) * bpe;
-    const val = (BigInt(longs[longIndex]) >> BigInt(bitOffset)) & mask;
+    const raw = longs[longIndex];
+    if (raw === undefined || raw === null) { result[i] = 0; continue; }
+    const val = (BigInt(raw) >> BigInt(bitOffset)) & mask;
     result[i] = Number(val);
   }
   return result;
