@@ -594,7 +594,7 @@ function decodeBitArray(longs, numEntries, paletteSize) {
   for (let i = 0; i < numEntries; i++) {
     const longIndex = Math.floor(i / entriesPerLong);
     const bitOffset = (i % entriesPerLong) * bpe;
-    const val = (longs[longIndex] >> BigInt(bitOffset)) & mask;
+    const val = (BigInt(longs[longIndex]) >> BigInt(bitOffset)) & mask;
     result[i] = Number(val);
   }
   return result;
