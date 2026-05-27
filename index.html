@@ -1360,7 +1360,10 @@ document.getElementById('btn-json').addEventListener('click', () => {
 
 function generateTabDelimited() {
   const counts = getActiveCounts();
-  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  let entries = Object.entries(counts)
+    .filter(([id]) => !state.filter || id.includes(state.filter) || blockIdToName(id).toLowerCase().includes(state.filter))
+    .filter(([id]) => !state.category || categorizeBlock(id) === state.category)
+    .sort(sortByFn(state.sortBy));
   return entries.map(([id, count]) => {
     const name = blockIdToName(id);
     const ms = maxStack(id);
@@ -1371,7 +1374,10 @@ function generateTabDelimited() {
 
 function generateCSV() {
   const counts = getActiveCounts();
-  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  let entries = Object.entries(counts)
+    .filter(([id]) => !state.filter || id.includes(state.filter) || blockIdToName(id).toLowerCase().includes(state.filter))
+    .filter(([id]) => !state.category || categorizeBlock(id) === state.category)
+    .sort(sortByFn(state.sortBy));
   const lines = ['Block Name,Item ID,Total Count,Stacks,Max Stack Size'];
   for (const [id, count] of entries) {
     const name = blockIdToName(id);
@@ -1405,7 +1411,10 @@ function sortByFn(s) {
 
 function generateJSON() {
   const counts = getActiveCounts();
-  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  let entries = Object.entries(counts)
+    .filter(([id]) => !state.filter || id.includes(state.filter) || blockIdToName(id).toLowerCase().includes(state.filter))
+    .filter(([id]) => !state.category || categorizeBlock(id) === state.category)
+    .sort(sortByFn(state.sortBy));
   const items = entries.map(([id, count]) => {
     const ms = maxStack(id);
     return {
